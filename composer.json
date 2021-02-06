@@ -1,0 +1,36 @@
+{
+    "name": "lizhineng/laravel-tablestore",
+    "description": "Alibaba Cloud Tablestore Adapter for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Li Zhineng",
+            "email": "im@zhineng.li"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "aliyun/aliyun-tablestore-sdk-php": "^5.0"
+    },
+        "require-dev": {
+        "orchestra/testbench": "^6.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "Zhineng\\Tablestore\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Zhineng\\Tablestore\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Zhineng\\Tablestore\\TablestoreServiceProvider"
+            ]
+        }
+    }
+}
