@@ -57,6 +57,13 @@ class TablestoreStoreTest extends TestCase
         $this->assertEquals(0, Cache::driver('tablestore')->get('counter'));
     }
 
+    public function testLocksCanBeAcquired()
+    {
+        Cache::driver('tablestore')->lock('lock', 10)->get(function () {
+            $this->assertFalse(Cache::driver('tablestore')->lock('lock', 10)->get());
+        });
+    }
+
     protected function getPackageProviders($app)
     {
         return [TablestoreServiceProvider::class];

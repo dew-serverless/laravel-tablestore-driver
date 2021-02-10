@@ -10,6 +10,7 @@ use Aliyun\OTS\Consts\RowExistenceExpectationConst;
 use Aliyun\OTS\OTSClient;
 use Aliyun\OTS\OTSServerException;
 use DateTimeInterface;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\InteractsWithTime;
@@ -168,11 +169,11 @@ class TablestoreStore implements Store
     }
 
     /**
-     * Store an item in the cache if the key does not exist.
+     * Store an item in the cache if the key doesn't exist.
      *
      * @param  string  $key
      * @param  mixed  $value
-     * @param  \DateTimeInterface|\DateInterval|int|null  $ttl
+     * @param  int  $seconds
      * @return bool
      */
     public function add($key, $value, $seconds): bool
@@ -308,6 +309,19 @@ class TablestoreStore implements Store
     public function forever($key, $value)
     {
         return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestamp() * 1000);
+    }
+
+    /**
+     * Get a lock instance.
+     *
+     * @param  string  $name
+     * @param  int  $seconds
+     * @param  string|null  $owner
+     * @return \Illuminate\Contracts\Cache\Lock
+     */
+    public function lock($name, $seconds = 0, $owner = null): Lock
+    {
+        return new TablestoreLock($this, $this->prefix.$name, $seconds, $owner);
     }
 
     /**
