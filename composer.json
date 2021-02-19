@@ -1,6 +1,6 @@
 {
-    "name": "lizhineng/laravel-tablestore",
-    "description": "Alibaba Cloud Tablestore Adapter for Laravel.",
+    "name": "lizhineng/laravel-tablestore-cache-driver",
+    "description": "Laravel cache driver for AlibabaCloud Tablestore.",
     "type": "library",
     "license": "MIT",
     "authors": [
