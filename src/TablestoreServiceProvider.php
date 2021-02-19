@@ -20,6 +20,8 @@ class TablestoreServiceProvider extends ServiceProvider
                             'AccessKeyID' => $config['key'],
                             'AccessKeySecret' => $config['secret'],
                             'InstanceName' => $config['instance'],
+                            'DebugLogHandler' => '',
+                            'ErrorLogHandler' => '',
                         ]),
                         $config['table']
                     )
