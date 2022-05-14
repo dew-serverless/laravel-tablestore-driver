@@ -18,26 +18,28 @@ class TablestoreStoreTest extends TestCase
         }
     }
 
-    public function testItemsCanBeStoredAndRetrieved()
+    public function test_items_can_be_stored_and_retrieved()
     {
         Cache::driver('tablestore')->put('name', 'Zhineng', 10);
+        Cache::driver('tablestore')->put('user', ['name' => 'Zhineng'], 10);
+        Cache::driver('tablestore')->put('fahrenheit', 79, 10);
+        Cache::driver('tablestore')->put('celsius', 26.5, 10);
+        Cache::driver('tablestore')->put('string', '100', 10);
+        Cache::driver('tablestore')->put('true', true, 10);
+        Cache::driver('tablestore')->put('false', false, 10);
+        Cache::driver('tablestore')->put('null', null, 10);
+
         $this->assertSame('Zhineng', Cache::driver('tablestore')->get('name'));
-
-        Cache::driver('tablestore')->put(['name' => 'Shiyun', 'age' => 28], 10);
-        $this->assertSame('Shiyun', Cache::driver('tablestore')->get('name'));
-        $this->assertEquals(28, Cache::driver('tablestore')->get('age'));
-
-        $this->assertEquals([
-            'name' => 'Shiyun',
-            'age' => 28,
-            'height' => null,
-        ], Cache::driver('tablestore')->many(['name', 'age', 'height']));
-
-        Cache::driver('tablestore')->forget('name');
-        $this->assertNull(Cache::driver('tablestore')->get('name'));
+        $this->assertSame(79, Cache::driver('tablestore')->get('fahrenheit'));
+        $this->assertSame(26.5, Cache::driver('tablestore')->get('celsius'));
+        $this->assertSame(['name' => 'Zhineng'], Cache::driver('tablestore')->get('user'));
+        $this->assertSame('100', Cache::driver('tablestore')->get('string'));
+        $this->assertSame(true, Cache::driver('tablestore')->get('true'));
+        $this->assertSame(false, Cache::driver('tablestore')->get('false'));
+        $this->assertSame(null, Cache::driver('tablestore')->get('null'));
     }
 
-    public function testItemsCanBeAtomicallyAdded()
+    public function test_items_can_be_atomically_added()
     {
         $key = Str::random(6);
 
@@ -45,19 +47,19 @@ class TablestoreStoreTest extends TestCase
         $this->assertFalse(Cache::driver('tablestore')->add($key, 'Zhineng', 10));
     }
 
-    public function testItemsCanBeIncrementedAndDecremented()
+    public function test_items_can_be_incremented_and_decremented()
     {
         Cache::driver('tablestore')->put('counter', 0, 10);
         Cache::driver('tablestore')->increment('counter');
         Cache::driver('tablestore')->increment('counter', 4);
 
-        $this->assertEquals(5, Cache::driver('tablestore')->get('counter'));
+        $this->assertSame(5, Cache::driver('tablestore')->get('counter'));
 
         Cache::driver('tablestore')->decrement('counter', 5);
-        $this->assertEquals(0, Cache::driver('tablestore')->get('counter'));
+        $this->assertSame(0, Cache::driver('tablestore')->get('counter'));
     }
 
-    public function testLocksCanBeAcquired()
+    public function test_locks_can_be_acquired()
     {
         Cache::driver('tablestore')->lock('lock', 10)->get(function () {
             $this->assertFalse(Cache::driver('tablestore')->lock('lock', 10)->get());

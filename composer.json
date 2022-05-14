@@ -1,6 +1,6 @@
 {
     "name": "lizhineng/laravel-tablestore-cache-driver",
-    "description": "Laravel cache driver for AlibabaCloud Tablestore.",
+    "description": "Laravel cache driver for Alibaba Cloud Tablestore.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -13,7 +13,7 @@
         "php": "^8.0",
         "aliyun/aliyun-tablestore-sdk-php": "^5.0"
     },
-        "require-dev": {
+    "require-dev": {
         "orchestra/testbench": "^6.11"
     },
     "autoload": {

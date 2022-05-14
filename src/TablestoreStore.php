@@ -26,7 +26,7 @@ class TablestoreStore implements Store
         protected string $table,
         protected string $keyAttribute = 'key',
         protected string $valueAttribute = 'value',
-        protected string $expirationAttribute = 'expired_at',
+        protected string $expirationAttribute = 'expires_at',
         protected string $prefix = ''
     ) {
         $this->setPrefix($prefix);
@@ -37,38 +37,30 @@ class TablestoreStore implements Store
      */
     public function get($key)
     {
-        return $this->getRow($key)[$this->valueAttribute] ?? null;
-    }
-
-    /**
-     * Get the raw row for the given key.
-     *
-     * @param  string  $key
-     * @return array|void
-     * @throws OTSServerException
-     * @throws \Aliyun\OTS\OTSClientException
-     */
-    protected function getRow($key)
-    {
         $response = $this->tablestore->getRow([
             'table_name' => $this->table,
             'primary_key' => [
-                [$this->keyAttribute, $this->getPrefix().$key, PrimaryKeyTypeConst::CONST_STRING],
+                [$this->keyAttribute, $this->prefix.$key, PrimaryKeyTypeConst::CONST_STRING],
             ],
             'max_versions' => 1,
         ]);
 
-        if (empty($response['attribute_columns'])) {
+        if (! isset($response['attribute_columns'])) {
             return;
         }
 
-        $item = $this->buildItem($response['attribute_columns']);
+        $item = $this->itemFromColumns($response['attribute_columns']);
 
         if ($this->isExpired($item)) {
             return;
         }
 
-        return $item;
+        if (isset($item[$this->valueAttribute])) {
+            return $this->unserialize(
+                $item[$this->valueAttribute][ColumnStructure::VALUE_INDEX],
+                $item[$this->valueAttribute][ColumnStructure::TYPE_INDEX]
+            );
+        }
     }
 
     /**
@@ -76,7 +68,7 @@ class TablestoreStore implements Store
      */
     public function many(array $keys): array
     {
-        $prefixedKeys = array_map(function($key) {
+        $prefixedKeys = array_map(function ($key) {
             return $this->getPrefix().$key;
         }, $keys);
 
@@ -104,7 +96,7 @@ class TablestoreStore implements Store
                 return [];
             }
 
-            $item = $this->buildItem($response['attribute_columns']);
+            $item = $this->itemFromColumns($response['attribute_columns']);
 
             if ($this->isExpired($item, $now)) {
                 $value = null;
@@ -112,7 +104,10 @@ class TablestoreStore implements Store
                 $value = $item[$this->valueAttribute];
             }
 
-            return [Str::replaceFirst($this->getPrefix(), '', $response['primary_key'][0][PrimaryKeyStructure::VALUE_INDEX]) => $value];
+            return [
+                Str::replaceFirst($this->getPrefix(), '',
+                    $response['primary_key'][0][PrimaryKeyStructure::VALUE_INDEX]) => $value,
+            ];
         })->all());
     }
 
@@ -121,16 +116,14 @@ class TablestoreStore implements Store
      */
     public function put($key, $value, $seconds)
     {
-        $expiration = $this->toTimestamp($seconds);
-
         $this->tablestore->putRow([
             'table_name' => $this->table,
             'primary_key' => [
-                [$this->keyAttribute, $this->getPrefix().$key, PrimaryKeyTypeConst::CONST_STRING],
+                [$this->keyAttribute, $this->prefix.$key, PrimaryKeyTypeConst::CONST_STRING],
             ],
             'attribute_columns' => [
-                [$this->valueAttribute, $value, $this->type($value), $expiration],
-                [$this->expirationAttribute, $expiration, ColumnTypeConst::CONST_INTEGER, $expiration],
+                [$this->valueAttribute, $this->serialize($value), $this->type($value)],
+                [$this->expirationAttribute, $this->toTimestamp($seconds), ColumnTypeConst::CONST_INTEGER],
             ],
         ]);
 
@@ -161,7 +154,7 @@ class TablestoreStore implements Store
                             ],
                         ];
                     })->values()->all(),
-                ]
+                ],
             ],
         ]);
 
@@ -179,16 +172,14 @@ class TablestoreStore implements Store
     public function add($key, $value, $seconds): bool
     {
         try {
-            $expiration = $this->toTimestamp($seconds);
-
             $this->tablestore->putRow([
                 'table_name' => $this->table,
                 'primary_key' => [
-                    [$this->keyAttribute, $this->getPrefix().$key, PrimaryKeyTypeConst::CONST_STRING],
+                    [$this->keyAttribute, $this->prefix.$key, PrimaryKeyTypeConst::CONST_STRING],
                 ],
                 'attribute_columns' => [
-                    [$this->valueAttribute, $value, $this->type($value), $expiration],
-                    [$this->expirationAttribute, $expiration, ColumnTypeConst::CONST_INTEGER, $expiration],
+                    [$this->valueAttribute, $this->serialize($value), $this->type($value)],
+                    [$this->expirationAttribute, $this->toTimestamp($seconds), ColumnTypeConst::CONST_INTEGER],
                 ],
                 'condition' => [
                     'row_existence' => RowExistenceExpectationConst::CONST_IGNORE,
@@ -216,9 +207,9 @@ class TablestoreStore implements Store
      */
     public function increment($key, $value = 1)
     {
-        // Due to the SDK limitation, we can't increment the value
-        // by single call, so we need to take the old value out first.
-        if (is_null($row = $this->getRow($key))) {
+        // We can't increment the value with single call due to the
+        // SDK limitation, so take the current value out first.
+        if (is_null($current = $this->get($key))) {
             return false;
         }
 
@@ -226,28 +217,25 @@ class TablestoreStore implements Store
             $this->tablestore->updateRow([
                 'table_name' => $this->table,
                 'primary_key' => [
-                    [$this->keyAttribute, $this->getPrefix().$key, PrimaryKeyTypeConst::CONST_STRING],
+                    [$this->keyAttribute, $this->prefix.$key, PrimaryKeyTypeConst::CONST_STRING],
                 ],
                 'update_of_attribute_columns' => [
                     'PUT' => [
-                        [
-                            $this->valueAttribute, $row[$this->valueAttribute] + $value, ColumnTypeConst::CONST_INTEGER,
-                            $row[$this->expirationAttribute]
-                        ],
+                        [$this->valueAttribute, $updated = $current + $value, ColumnTypeConst::CONST_INTEGER],
                     ],
                 ],
                 'condition' => [
                     'row_existence' => RowExistenceExpectationConst::CONST_EXPECT_EXIST,
                     'column_condition' => [
                         'column_name' => $this->valueAttribute,
-                        'value' => $row[$this->valueAttribute],
+                        'value' => $current,
                         'comparator' => ComparatorTypeConst::CONST_EQUAL,
                         'pass_if_missing' => false,
                     ],
                 ],
             ]);
 
-            return $row[$this->valueAttribute] + $value;
+            return $updated;
         } catch (OTSServerException $e) {
             if (Str::contains($e->getMessage(), 'OTSConditionCheckFail')) {
                 return false;
@@ -262,9 +250,9 @@ class TablestoreStore implements Store
      */
     public function decrement($key, $value = 1)
     {
-        // Due to the SDK limitation, we can't increment the value
-        // by single call, so we need to take the old value out first.
-        if (is_null($row = $this->getRow($key))) {
+        // We can't decrement the value with single call due to the
+        // SDK limitation, so take the current value out first.
+        if (is_null($current = $this->get($key))) {
             return false;
         }
 
@@ -272,28 +260,25 @@ class TablestoreStore implements Store
             $this->tablestore->updateRow([
                 'table_name' => $this->table,
                 'primary_key' => [
-                    [$this->keyAttribute, $this->getPrefix().$key, PrimaryKeyTypeConst::CONST_STRING],
+                    [$this->keyAttribute, $this->prefix.$key, PrimaryKeyTypeConst::CONST_STRING],
                 ],
                 'update_of_attribute_columns' => [
                     'PUT' => [
-                        [
-                            $this->valueAttribute, $row[$this->valueAttribute] - $value, ColumnTypeConst::CONST_INTEGER,
-                            $row[$this->expirationAttribute]
-                        ],
+                        [$this->valueAttribute, $updated = $current - $value, ColumnTypeConst::CONST_INTEGER],
                     ],
                 ],
                 'condition' => [
                     'row_existence' => RowExistenceExpectationConst::CONST_EXPECT_EXIST,
                     'column_condition' => [
                         'column_name' => $this->valueAttribute,
-                        'value' => $row[$this->valueAttribute],
+                        'value' => $current,
                         'comparator' => ComparatorTypeConst::CONST_EQUAL,
                         'pass_if_missing' => false,
                     ],
                 ],
             ]);
 
-            return $row[$this->valueAttribute] - $value;
+            return $updated;
         } catch (OTSServerException $e) {
             if (Str::contains($e->getMessage(), 'ConditionalCheckFailed')) {
                 return false;
@@ -354,10 +339,10 @@ class TablestoreStore implements Store
      * @param  array  $columns
      * @return array
      */
-    protected function buildItem(array $columns): array
+    protected function itemFromColumns(array $columns): array
     {
         return collect($columns)->mapWithKeys(function ($column) {
-            return [$column[ColumnStructure::NAME_INDEX] => $column[ColumnStructure::VALUE_INDEX]];
+            return [$column[ColumnStructure::NAME_INDEX] => $column];
         })->toArray();
     }
 
@@ -380,6 +365,24 @@ class TablestoreStore implements Store
         return $this->prefix;
     }
 
+    protected function serialize($value): string
+    {
+        return match(gettype($value)) {
+            'integer', 'double', 'boolean' => (string) $value,
+            default => serialize($value),
+        };
+    }
+
+    protected function unserialize(mixed $value, string $type): mixed
+    {
+        return match ($type) {
+            ColumnTypeConst::CONST_INTEGER => (int) $value,
+            ColumnTypeConst::CONST_DOUBLE => (float) $value,
+            ColumnTypeConst::CONST_BOOLEAN => $value,
+            ColumnTypeConst::CONST_STRING => unserialize($value),
+        };
+    }
+
     /**
      * Get the Tablestore type for the given value.
      *
@@ -388,9 +391,12 @@ class TablestoreStore implements Store
      */
     protected function type(mixed $value): string
     {
-        return is_numeric($value)
-            ? ColumnTypeConst::CONST_INTEGER
-            : ColumnTypeConst::CONST_STRING;
+        return match (gettype($value)) {
+            'integer' => ColumnTypeConst::CONST_INTEGER,
+            'double' => ColumnTypeConst::CONST_DOUBLE,
+            'boolean' => ColumnTypeConst::CONST_BOOLEAN,
+            default => ColumnTypeConst::CONST_STRING,
+        };
     }
 
     /**
@@ -419,7 +425,12 @@ class TablestoreStore implements Store
     {
         $expiration = $expiration ?: Carbon::now();
 
-        return isset($item[$this->expirationAttribute]) &&
-            ($expiration->getTimestamp() * 1000) >= $item[$this->expirationAttribute];
+        return isset($item[$this->expirationAttribute][ColumnStructure::VALUE_INDEX]) &&
+            ($expiration->getTimestamp() * 1000) >= $item[$this->expirationAttribute][ColumnStructure::VALUE_INDEX];
+    }
+
+    public function getClient(): OTSClient
+    {
+        return $this->tablestore;
     }
 }
