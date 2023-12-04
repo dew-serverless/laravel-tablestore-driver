@@ -296,19 +296,6 @@ class TablestoreStore implements Store
     }
 
     /**
-     * Build up the structured data item for the response.
-     *
-     * @param  array  $columns
-     * @return array
-     */
-    protected function itemFromColumns(array $columns): array
-    {
-        return collect($columns)->mapWithKeys(function ($column) {
-            return [$column[ColumnStructure::NAME_INDEX] => $column];
-        })->toArray();
-    }
-
-    /**
      * Set the cache key prefix.
      *
      * @param  string  $prefix
