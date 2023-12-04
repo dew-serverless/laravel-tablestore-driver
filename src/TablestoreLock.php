@@ -6,18 +6,20 @@ use Illuminate\Cache\Lock;
 
 class TablestoreLock extends Lock
 {
+    /**
+     * Create a Tablestore lock.
+     */
     public function __construct(
         protected TablestoreStore $tablestore,
-        string $name,
-        int $seconds,
-        ?string $owner = null
-    )
-    {
+        string $name, int $seconds, string $owner = null
+    ) {
         parent::__construct($name, $seconds, $owner);
     }
 
     /**
-     * @inheritDoc
+     * Attempt to acquire the lock.
+     *
+     * @return bool
      */
     public function acquire()
     {
@@ -27,7 +29,9 @@ class TablestoreLock extends Lock
     }
 
     /**
-     * @inheritDoc
+     * Release the lock.
+     *
+     * @return bool
      */
     public function release()
     {
@@ -39,7 +43,9 @@ class TablestoreLock extends Lock
     }
 
     /**
-     * @inheritDoc
+     * Releases this lock in disregard of ownership.
+     *
+     * @return void
      */
     public function forceRelease()
     {
@@ -47,7 +53,9 @@ class TablestoreLock extends Lock
     }
 
     /**
-     * @inheritDoc
+     * Returns the owner value written into the driver for this lock.
+     *
+     * @return string
      */
     protected function getCurrentOwner()
     {
