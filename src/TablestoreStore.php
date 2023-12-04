@@ -76,23 +76,30 @@ class TablestoreStore implements Store
      */
     public function many(array $keys): array
     {
-        $response = $this->tablestore->batch(function ($query) use ($keys) {
+        $now = Carbon::now()->getTimestampMs();
+
+        $response = $this->tablestore->batch(function ($query) use ($keys, $now) {
             foreach ($keys as $key) {
                 $query->table($this->table)
                     ->whereKey($this->keyAttribute, $this->prefix.$key)
+                    ->where($this->expirationAttribute, '>', $now)
                     ->get();
             }
         });
 
         $prefix = strlen($this->prefix);
-        $result = [];
+        $result = array_fill_keys($keys, null);
 
         foreach ($response->getTables()[0]->getRows() as $row) {
             $decoded = (new RowDecodableResponse($row))->getDecodedRow();
 
+            if ($decoded === null) {
+                continue;
+            }
+
             $key = substr($decoded[$this->keyAttribute]->value(), $prefix);
 
-            $result[$key] = $this->isExpired($decoded) ? null : $this->unserialize($decoded[$this->valueAttribute][0]->value());
+            $result[$key] = $this->unserialize($decoded[$this->valueAttribute][0]->value());
         }
 
         return $result;

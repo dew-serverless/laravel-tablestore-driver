@@ -57,6 +57,12 @@ class TablestoreStoreTest extends TestCase
         $this->assertSame($result, $items);
     }
 
+    public function test_items_not_found_will_have_a_null_value()
+    {
+        $result = Cache::driver('tablestore')->many(['not-exists-1', 'not-exists-2']);
+        $this->assertSame(['not-exists-1' => null, 'not-exists-2' => null], $result);
+    }
+
     public function test_items_can_be_atomically_added()
     {
         $key = Str::random(6);
