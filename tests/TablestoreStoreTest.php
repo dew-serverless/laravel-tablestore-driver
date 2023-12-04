@@ -39,6 +39,24 @@ class TablestoreStoreTest extends TestCase
         $this->assertSame(null, Cache::driver('tablestore')->get('null'));
     }
 
+    public function test_items_can_be_stored_and_retrieved_in_batches()
+    {
+        $items = [
+            'many-name' => 'Zhineng',
+            'many-user' => ['name' => 'Zhineng'],
+            'many-fahrenheit' => 79,
+            'many-celsius' => 26.5,
+            'many-string' => '100',
+            'many-true' => true,
+            'many-false' => false,
+            'many-null' => null,
+        ];
+
+        Cache::driver('tablestore')->putMany($items, 10);
+        $result = Cache::driver('tablestore')->many(array_keys($items));
+        $this->assertSame($result, $items);
+    }
+
     public function test_items_can_be_atomically_added()
     {
         $key = Str::random(6);
