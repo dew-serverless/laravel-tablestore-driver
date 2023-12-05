@@ -47,15 +47,12 @@ class TablestoreStore implements Store
     {
         $response = $this->tablestore->table($this->table)
             ->whereKey($this->keyAttribute, $this->prefix.$key)
+            ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
             ->get();
 
         $item = $response->getDecodedRow();
 
         if ($item === null) {
-            return;
-        }
-
-        if ($this->isExpired($item)) {
             return;
         }
 
@@ -159,7 +156,7 @@ class TablestoreStore implements Store
     public function add($key, $value, $seconds): bool
     {
         try {
-            Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestamp() * 1000)
+            Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestampMs())
                 ->toFormattedValue($buffer = new PlainbufferWriter);
 
             $filter = new Filter;
@@ -351,21 +348,6 @@ class TablestoreStore implements Store
             : Carbon::now()->getTimestamp();
 
         return $timestamp * 1000;
-    }
-
-    /**
-     * Determine if the given item is expired.
-     *
-     * @param  array  $item
-     * @param  DateTimeInterface|null  $expiration
-     * @return bool
-     */
-    protected function isExpired(array $item, DateTimeInterface $expiration = null): bool
-    {
-        $expiration = $expiration ?: Carbon::now();
-
-        return isset($item[$this->expirationAttribute][0])
-            && ($expiration->getTimestamp() * 1000) >= $item[$this->expirationAttribute][0]->value();
     }
 
     /**

@@ -59,8 +59,17 @@ class TablestoreStoreTest extends TestCase
 
     public function test_items_not_found_will_have_a_null_value()
     {
-        $result = Cache::driver('tablestore')->many(['not-exists-1', 'not-exists-2']);
-        $this->assertSame(['not-exists-1' => null, 'not-exists-2' => null], $result);
+        $this->assertNull(Cache::driver('tablestore')->get('not-exists-1'));
+
+        $this->assertSame([
+            'not-exists-1' => null, 'not-exists-2' => null,
+        ], Cache::driver('tablestore')->many(['not-exists-1', 'not-exists-2']));
+    }
+
+    public function test_expired_items_will_have_a_null_value()
+    {
+        Cache::driver('tablestore')->getStore()->put('expired', 'Zhineng', 0);
+        $this->assertNull(Cache::driver('tablestore')->get('expired'));
     }
 
     public function test_items_can_be_atomically_added()
