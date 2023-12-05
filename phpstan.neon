@@ -7,8 +7,20 @@ parameters:
         - src
     ignoreErrors:
         -
-            message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Cache\:\:[a-zA-Z0-9\\_]+\(\)\.$#'
-            path: src/TablestoreServiceProvider.php
-        -
             message: '#^Cannot access offset ''config'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
             path: src/TablestoreServiceProvider.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::get\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::many\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::putMany\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::increment\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::decrement\(\)$#'
+            path: src/TablestoreStore.php

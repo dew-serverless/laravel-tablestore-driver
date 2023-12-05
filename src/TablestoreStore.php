@@ -64,9 +64,11 @@ class TablestoreStore implements Store
         /** @var \Dew\Tablestore\Contracts\HasValue[] */
         $values = $item[$this->valueAttribute] ?? [];
 
-        if (isset($values[0])) {
-            return $this->unserialize($values[0]->value());
+        if (! isset($values[0])) {
+            return;
         }
+
+        return $this->unserialize($values[0]->value());
     }
 
     /**
@@ -77,7 +79,7 @@ class TablestoreStore implements Store
      * @param  array<int, string>  $keys
      * @return array<string, mixed>
      */
-    public function many(array $keys): array
+    public function many(array $keys)
     {
         $now = Carbon::now()->getTimestampMs();
 
