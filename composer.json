@@ -15,7 +15,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^6.11",
-        "phpstan/phpstan": "^1.10"
+        "phpstan/phpstan": "^1.10",
+        "phpstan/phpstan-strict-rules": "^1.5"
     },
     "autoload": {
         "psr-4": {
