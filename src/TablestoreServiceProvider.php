@@ -8,6 +8,11 @@ use Illuminate\Support\ServiceProvider;
 
 class TablestoreServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
     public function register()
     {
         $this->app->booting(function () {
