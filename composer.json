@@ -14,7 +14,7 @@
         "dew-serverless/tablestore-php": "^1.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.11",
+        "orchestra/testbench": "^8.0",
         "phpstan/phpstan": "^1.10",
         "phpstan/phpstan-strict-rules": "^1.5"
     },
