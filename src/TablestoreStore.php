@@ -2,7 +2,6 @@
 
 namespace Zhineng\Tablestore;
 
-use DateTimeInterface;
 use Dew\Tablestore\Attribute;
 use Dew\Tablestore\Exceptions\TablestoreException;
 use Dew\Tablestore\PlainbufferWriter;
