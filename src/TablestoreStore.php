@@ -157,14 +157,16 @@ class TablestoreStore implements Store
     {
         try {
             Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestampMs())
-                ->toFormattedValue($buffer = new PlainbufferWriter);
+                ->toFormattedValue($now = new PlainbufferWriter);
 
+            // Include only items that do not exist or that have expired
+            // expression: expiration <= now
             $filter = new Filter;
             $filter->setType(FilterType::FT_SINGLE_COLUMN_VALUE);
             $filter->setFilter((new SingleColumnValueFilter)
-                ->setComparator(ComparatorType::CT_LESS_THAN)
                 ->setColumnName($this->expirationAttribute)
-                ->setColumnValue($buffer->getBuffer())
+                ->setComparator(ComparatorType::CT_LESS_THAN)
+                ->setColumnValue($now->getBuffer())
                 ->setFilterIfMissing(false) // allow missing
                 ->setLatestVersionOnly(true)
                 ->serializeToString());
