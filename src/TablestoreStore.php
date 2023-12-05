@@ -168,7 +168,7 @@ class TablestoreStore implements Store
                 ->setComparator(ComparatorType::CT_LESS_THAN)
                 ->setColumnName($this->expirationAttribute)
                 ->setColumnValue($buffer->getBuffer())
-                ->setFilterIfMissing(false)
+                ->setFilterIfMissing(false) // allow missing
                 ->setLatestVersionOnly(true)
                 ->serializeToString());
 
