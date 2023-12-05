@@ -253,7 +253,7 @@ class TablestoreStore implements Store
      */
     public function forever($key, $value)
     {
-        return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestamp() * 1000);
+        return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestampMs());
     }
 
     /**
