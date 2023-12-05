@@ -1,0 +1,11 @@
+parameters:
+    level: max
+    paths:
+        - src
+    ignoreErrors:
+        -
+            message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Cache\:\:[a-zA-Z0-9\\_]+\(\)\.$#'
+            path: src/TablestoreServiceProvider.php
+        -
+            message: '#^Cannot access offset ''config'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+            path: src/TablestoreServiceProvider.php

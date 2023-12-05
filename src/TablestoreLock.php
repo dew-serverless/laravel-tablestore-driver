@@ -3,15 +3,21 @@
 namespace Zhineng\Tablestore;
 
 use Illuminate\Cache\Lock;
+use RuntimeException;
 
 class TablestoreLock extends Lock
 {
     /**
-     * Create a Tablestore lock.
+     * Create a new Tablestore lock instance.
+     *
+     * @param  string  $name
+     * @param  int  $seconds
+     * @param  string|null  $owner
+     * @return void
      */
     public function __construct(
         protected TablestoreStore $tablestore,
-        string $name, int $seconds, string $owner = null
+        $name, $seconds, $owner = null
     ) {
         parent::__construct($name, $seconds, $owner);
     }
@@ -59,6 +65,12 @@ class TablestoreLock extends Lock
      */
     protected function getCurrentOwner()
     {
-        return $this->tablestore->get($this->name);
+        $owner = $this->tablestore->get($this->name);
+
+        if (is_string($owner)) {
+            return $owner;
+        }
+
+        throw new RuntimeException('The owner seems to be modified somewhere else.');
     }
 }
