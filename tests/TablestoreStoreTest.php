@@ -39,6 +39,39 @@ class TablestoreStoreTest extends TestCase
         $this->assertSame(null, Cache::driver('tablestore')->get('null'));
     }
 
+    public function test_items_can_be_stored_and_retrieved_in_batches()
+    {
+        $items = [
+            'many-name' => 'Zhineng',
+            'many-user' => ['name' => 'Zhineng'],
+            'many-fahrenheit' => 79,
+            'many-celsius' => 26.5,
+            'many-string' => '100',
+            'many-true' => true,
+            'many-false' => false,
+            'many-null' => null,
+        ];
+
+        Cache::driver('tablestore')->putMany($items, 10);
+        $result = Cache::driver('tablestore')->many(array_keys($items));
+        $this->assertSame($result, $items);
+    }
+
+    public function test_items_not_found_will_have_a_null_value()
+    {
+        $this->assertNull(Cache::driver('tablestore')->get('not-exists-1'));
+
+        $this->assertSame([
+            'not-exists-1' => null, 'not-exists-2' => null,
+        ], Cache::driver('tablestore')->many(['not-exists-1', 'not-exists-2']));
+    }
+
+    public function test_expired_items_will_have_a_null_value()
+    {
+        Cache::driver('tablestore')->getStore()->put('expired', 'Zhineng', 0);
+        $this->assertNull(Cache::driver('tablestore')->get('expired'));
+    }
+
     public function test_items_can_be_atomically_added()
     {
         $key = Str::random(6);
