@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\Php80\Rector\FunctionLike\MixedTypeRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
@@ -19,6 +20,10 @@ return static function (RectorConfig $rectorConfig): void {
         SetList::EARLY_RETURN,
         SetList::PRIVATIZATION,
         SetList::STRICT_BOOLEANS,
+    ]);
+
+    $rectorConfig->rules([
+        DeclareStrictTypesRector::class,
     ]);
 
     $rectorConfig->skip([
