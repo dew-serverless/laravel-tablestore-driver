@@ -14,10 +14,10 @@
         "dew-serverless/tablestore-php": "^1.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^8.0",
+        "orchestra/testbench": "^7.37|^8.17",
         "phpstan/phpstan": "^1.10",
         "phpstan/phpstan-strict-rules": "^1.5",
-        "laravel/pint": "^1.13",
+        "laravel/pint": "^1.0",
         "rector/rector": "^0.18.12"
     },
     "autoload": {
@@ -43,12 +43,12 @@
         "refactor": "rector process",
         "test:style": "pint --test",
         "test:refactor": "rector process --dry-run",
-        "test:integrate": "phpunit",
+        "test:integration": "phpunit",
         "test": [
             "@test:style",
             "@test:refactor",
             "@lint",
-            "@test:integrate"
+            "@test:integration"
         ]
     }
 }

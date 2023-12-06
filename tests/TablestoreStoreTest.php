@@ -17,7 +17,7 @@ class TablestoreStoreTest extends TestCase
     {
         parent::setUp();
 
-        if (! env('TABLESTORE_CACHE_TABLE')) {
+        if (env('TABLESTORE_ENDPOINT') === '') {
             $this->markTestSkipped('Tablestore not configured.');
         }
     }
@@ -147,11 +147,11 @@ class TablestoreStoreTest extends TestCase
         tap($app['config'], function (Repository $config) {
             $config->set('cache.stores.tablestore', [
                 'driver' => 'tablestore',
-                'key' => env('ALIYUN_ACCESS_KEY_ID'),
-                'secret' => env('ALIYUN_SECRET_ACCESS_KEY'),
+                'key' => env('ACS_ACCESS_KEY_ID'),
+                'secret' => env('ACS_ACCESS_KEY_SECRET'),
                 'endpoint' => env('TABLESTORE_ENDPOINT'),
-                'instance' => env('TABLESTORE_INSTANCE_NAME'),
-                'table' => env('TABLESTORE_CACHE_TABLE', 'laravel_test'),
+                'instance' => env('TABLESTORE_INSTANCE'),
+                'table' => env('TABLESTORE_CACHE', 'testing'),
             ]);
         });
     }
