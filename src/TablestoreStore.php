@@ -12,6 +12,7 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\InteractsWithTime;
+use InvalidArgumentException;
 use Protos\ComparatorType;
 use Protos\Filter;
 use Protos\FilterType;
@@ -21,6 +22,11 @@ use RuntimeException;
 class TablestoreStore implements Store
 {
     use InteractsWithTime;
+
+    /**
+     * The length of the prefix.
+     */
+    protected int $prefixLength;
 
     /**
      * Create a Tablestore cache store.
@@ -39,7 +45,7 @@ class TablestoreStore implements Store
     /**
      * Retrieve an item from the cache by key.
      *
-     * @param  string|array  $key
+     * @param  string  $key
      * @return mixed
      */
     public function get($key)
@@ -55,11 +61,14 @@ class TablestoreStore implements Store
             return;
         }
 
-        if (isset($item[$this->valueAttribute])) {
-            return $this->unserialize(
-                $item[$this->valueAttribute][0]->value()
-            );
+        /** @var \Dew\Tablestore\Contracts\HasValue[] */
+        $values = $item[$this->valueAttribute] ?? [];
+
+        if (! isset($values[0])) {
+            return;
         }
+
+        return $this->unserialize($values[0]->value());
     }
 
     /**
@@ -67,10 +76,10 @@ class TablestoreStore implements Store
      *
      * Items not found in the cache will have a null value.
      *
-     * @param  array  $keys
-     * @return array
+     * @param  array<int, string>  $keys
+     * @return array<string, mixed>
      */
-    public function many(array $keys): array
+    public function many(array $keys)
     {
         $now = Carbon::now()->getTimestampMs();
 
@@ -83,19 +92,32 @@ class TablestoreStore implements Store
             }
         });
 
-        $prefix = strlen($this->prefix);
         $result = array_fill_keys($keys, null);
 
-        foreach ($response->getTables()[0]->getRows() as $row) {
+        /** @var \Protos\TableInBatchGetRowResponse[] */
+        $tables = $response->getTables();
+
+        /** @var \Protos\RowInBatchGetRowResponse[] */
+        $rows = $tables[0]->getRows();
+
+        foreach ($rows as $row) {
             $decoded = (new RowDecodableResponse($row))->getDecodedRow();
 
             if ($decoded === null) {
                 continue;
             }
 
-            $key = substr($decoded[$this->keyAttribute]->value(), $prefix);
+            /** @var \Dew\Tablestore\Cells\StringPrimaryKey */
+            $key = $decoded[$this->keyAttribute];
 
-            $result[$key] = $this->unserialize($decoded[$this->valueAttribute][0]->value());
+            /** @var \Dew\Tablestore\Contracts\HasValue[] */
+            $values = $decoded[$this->valueAttribute] ?? [];
+
+            if (isset($values[0])) {
+                $result[$this->pure($key->value())] = $this->unserialize(
+                    $values[0]->value()
+                );
+            }
         }
 
         return $result;
@@ -123,7 +145,7 @@ class TablestoreStore implements Store
     /**
      * Store multiple items in the cache for a given number of seconds.
      *
-     * @param  array  $values
+     * @param  array<string, mixed>  $values
      * @param  int  $seconds
      * @return bool
      */
@@ -193,7 +215,7 @@ class TablestoreStore implements Store
      * Increment the value of an item in the cache.
      *
      * @param  string  $key
-     * @param  mixed  $value
+     * @param  int  $value
      * @return int|bool
      */
     public function increment($key, $value = 1)
@@ -220,7 +242,7 @@ class TablestoreStore implements Store
      * Decrement the value of an item in the cache.
      *
      * @param  string  $key
-     * @param  mixed  $value
+     * @param  int  $value
      * @return int|bool
      */
     public function decrement($key, $value = 1)
@@ -302,6 +324,7 @@ class TablestoreStore implements Store
     protected function setPrefix(string $prefix): void
     {
         $this->prefix = $prefix === '' ? '' : $prefix.':';
+        $this->prefixLength = strlen($this->prefix);
     }
 
     /**
@@ -317,7 +340,7 @@ class TablestoreStore implements Store
     /**
      * Generate a storable representation of a value.
      */
-    protected function serialize($value): int|float|bool|string
+    protected function serialize(mixed $value): int|float|bool|string
     {
         return match(gettype($value)) {
             'integer', 'double', 'boolean' => $value,
@@ -328,12 +351,23 @@ class TablestoreStore implements Store
     /**
      * Create a PHP value from a stored representation.
      */
-    protected function unserialize($value): mixed
+    protected function unserialize(mixed $value): mixed
     {
         return match (gettype($value)) {
             'integer', 'double', 'boolean' => $value,
-            default => unserialize($value),
+            'string' => unserialize($value),
+            default => throw new InvalidArgumentException(sprintf(
+                'Unexpected type [%s] occurred.', gettype($value)
+            )),
         };
+    }
+
+    /**
+     * Get the key without the prefix.
+     */
+    protected function pure(string $key): string
+    {
+        return substr($key, $this->prefixLength);
     }
 
     /**

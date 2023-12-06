@@ -1,0 +1,26 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    level: max
+    paths:
+        - src
+    ignoreErrors:
+        -
+            message: '#^Cannot access offset ''config'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+            path: src/TablestoreServiceProvider.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::get\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::many\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::putMany\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::increment\(\)$#'
+            path: src/TablestoreStore.php
+        -
+            message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::decrement\(\)$#'
+            path: src/TablestoreStore.php
