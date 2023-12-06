@@ -191,7 +191,7 @@ final class TablestoreStore implements LockProvider, Store
             $filter->setType(FilterType::FT_SINGLE_COLUMN_VALUE);
             $filter->setFilter((new SingleColumnValueFilter)
                 ->setColumnName($this->expirationAttribute)
-                ->setComparator(ComparatorType::CT_LESS_THAN)
+                ->setComparator(ComparatorType::CT_LESS_EQUAL)
                 ->setColumnValue($now->getBuffer())
                 ->setFilterIfMissing(false) // allow missing
                 ->setLatestVersionOnly(true)
