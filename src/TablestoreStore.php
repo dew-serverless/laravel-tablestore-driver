@@ -52,12 +52,10 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function get($key)
     {
-        $response = $this->tablestore->table($this->table)
+        $item = $this->tablestore->table($this->table)
             ->whereKey($this->keyAttribute, $this->prefix.$key)
             ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
-            ->get();
-
-        $item = $response->getDecodedRow();
+            ->get()->getDecodedRow();
 
         if ($item === null) {
             return;
@@ -66,11 +64,7 @@ final class TablestoreStore implements LockProvider, Store
         /** @var \Dew\Tablestore\Contracts\HasValue[] */
         $values = $item[$this->valueAttribute] ?? [];
 
-        if (! isset($values[0])) {
-            return;
-        }
-
-        return $this->unserialize($values[0]->value());
+        return isset($values[0]) ? $this->unserialize($values[0]->value()) : null;
     }
 
     /**
