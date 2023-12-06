@@ -17,7 +17,8 @@
         "orchestra/testbench": "^8.0",
         "phpstan/phpstan": "^1.10",
         "phpstan/phpstan-strict-rules": "^1.5",
-        "laravel/pint": "^1.13"
+        "laravel/pint": "^1.13",
+        "rector/rector": "^0.18.12"
     },
     "autoload": {
         "psr-4": {
@@ -39,10 +40,13 @@
     "scripts": {
         "format": "pint",
         "lint": "phpstan analyze",
+        "refactor": "rector process",
         "test:style": "pint --test",
+        "test:refactor": "rector process --dry-run",
         "test:integrate": "phpunit",
         "test": [
             "@test:style",
+            "@test:refactor",
             "@lint",
             "@test:integrate"
         ]

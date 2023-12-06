@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Zhineng\Tablestore;
 
 use Dew\Tablestore\Attribute;
@@ -18,14 +20,14 @@ use Protos\FilterType;
 use Protos\SingleColumnValueFilter;
 use RuntimeException;
 
-class TablestoreStore implements Store
+final class TablestoreStore implements Store
 {
     use InteractsWithTime;
 
     /**
      * The length of the prefix.
      */
-    protected int $prefixLength;
+    private int $prefixLength;
 
     /**
      * Create a Tablestore cache store.
@@ -317,7 +319,7 @@ class TablestoreStore implements Store
     /**
      * Set the cache key prefix.
      */
-    protected function setPrefix(string $prefix): void
+    private function setPrefix(string $prefix): void
     {
         $this->prefix = $prefix === '' ? '' : $prefix.':';
         $this->prefixLength = strlen($this->prefix);
@@ -336,7 +338,7 @@ class TablestoreStore implements Store
     /**
      * Generate a storable representation of a value.
      */
-    protected function serialize(mixed $value): int|float|bool|string
+    private function serialize(mixed $value): int|float|bool|string
     {
         return match (gettype($value)) {
             'integer', 'double', 'boolean' => $value,
@@ -347,7 +349,7 @@ class TablestoreStore implements Store
     /**
      * Create a PHP value from a stored representation.
      */
-    protected function unserialize(mixed $value): mixed
+    private function unserialize(mixed $value): mixed
     {
         return match (gettype($value)) {
             'integer', 'double', 'boolean' => $value,
@@ -361,7 +363,7 @@ class TablestoreStore implements Store
     /**
      * Get the key without the prefix.
      */
-    protected function pure(string $key): string
+    private function pure(string $key): string
     {
         return substr($key, $this->prefixLength);
     }
@@ -369,7 +371,7 @@ class TablestoreStore implements Store
     /**
      * Get the UNIX timestamp in milliseconds for the given number of seconds.
      */
-    protected function toTimestamp(int $seconds): int
+    private function toTimestamp(int $seconds): int
     {
         $timestamp = $seconds > 0
             ? $this->availableAt($seconds)
