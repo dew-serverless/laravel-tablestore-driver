@@ -102,17 +102,17 @@ final class TablestoreStore implements LockProvider, Store
         $rows = $tables[0]->getRows();
 
         foreach ($rows as $row) {
-            $decoded = (new RowDecodableResponse($row))->getDecodedRow();
+            $item = (new RowDecodableResponse($row))->getDecodedRow();
 
-            if ($decoded === null) {
+            if ($item === null) {
                 continue;
             }
 
             /** @var \Dew\Tablestore\Cells\StringPrimaryKey */
-            $key = $decoded[$this->keyAttribute];
+            $key = $item[$this->keyAttribute];
 
             /** @var \Dew\Tablestore\Contracts\HasValue[] */
-            $values = $decoded[$this->valueAttribute] ?? [];
+            $values = $item[$this->valueAttribute] ?? [];
 
             if (isset($values[0])) {
                 $result[$this->pure($key->value())] = $this->unserialize(
