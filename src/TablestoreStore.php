@@ -84,10 +84,12 @@ final class TablestoreStore implements LockProvider, Store
         $now = Carbon::now()->getTimestampMs();
 
         $response = $this->tablestore->batch(function ($query) use ($keys, $now) {
+            $query->table($this->table)
+                ->where($this->expirationAttribute, '>', $now);
+
             foreach ($keys as $key) {
                 $query->table($this->table)
                     ->whereKey($this->keyAttribute, $this->prefix.$key)
-                    ->where($this->expirationAttribute, '>', $now)
                     ->get();
             }
         });
