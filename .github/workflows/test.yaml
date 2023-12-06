@@ -12,6 +12,8 @@ jobs:
       matrix:
         php: ['8.0', '8.1', '8.2', '8.3']
         dependency-version: [prefer-lowest, prefer-stable]
+      fail-fast: true
+      max-parallel: 1
 
     name: PHP ${{ matrix.php }} - ${{ matrix.dependency-version }}
 
