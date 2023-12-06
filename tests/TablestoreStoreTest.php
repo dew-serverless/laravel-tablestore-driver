@@ -17,7 +17,7 @@ class TablestoreStoreTest extends TestCase
     {
         parent::setUp();
 
-        if (! env('TABLESTORE_CACHE_TABLE')) {
+        if (env('TABLESTORE_ENDPOINT') === '') {
             $this->markTestSkipped('Tablestore not configured.');
         }
     }
