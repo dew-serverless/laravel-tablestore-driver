@@ -10,6 +10,7 @@ use Dew\Tablestore\PlainbufferWriter;
 use Dew\Tablestore\PrimaryKey;
 use Dew\Tablestore\Responses\RowDecodableResponse;
 use Dew\Tablestore\Tablestore;
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\InteractsWithTime;
@@ -20,7 +21,7 @@ use Protos\FilterType;
 use Protos\SingleColumnValueFilter;
 use RuntimeException;
 
-final class TablestoreStore implements Store
+final class TablestoreStore implements LockProvider, Store
 {
     use InteractsWithTime;
 
@@ -289,6 +290,18 @@ final class TablestoreStore implements Store
     public function lock($name, $seconds = 0, $owner = null)
     {
         return new TablestoreLock($this, $this->prefix.$name, $seconds, $owner);
+    }
+
+    /**
+     * Restore a lock instance using the owner identifier.
+     *
+     * @param  string  $name
+     * @param  string  $owner
+     * @return \Illuminate\Contracts\Cache\Lock
+     */
+    public function restoreLock($name, $owner)
+    {
+        return $this->lock($name, 0, $owner);
     }
 
     /**
