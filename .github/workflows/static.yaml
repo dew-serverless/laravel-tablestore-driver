@@ -22,5 +22,8 @@ jobs:
       - name: Install Dependencies
         run: composer update --prefer-stable --no-interaction --no-progress --ansi
 
+      - name: Run Code Formatter
+        run: composer test:style
+
       - name: Run Linter
         run: composer lint

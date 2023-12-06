@@ -16,7 +16,8 @@
     "require-dev": {
         "orchestra/testbench": "^8.0",
         "phpstan/phpstan": "^1.10",
-        "phpstan/phpstan-strict-rules": "^1.5"
+        "phpstan/phpstan-strict-rules": "^1.5",
+        "laravel/pint": "^1.13"
     },
     "autoload": {
         "psr-4": {
@@ -36,7 +37,14 @@
         }
     },
     "scripts": {
+        "format": "pint",
         "lint": "phpstan analyze",
-        "test": "phpunit"
+        "test:style": "pint --test",
+        "test:integrate": "phpunit",
+        "test": [
+            "@test:style",
+            "@lint",
+            "@test:integrate"
+        ]
     }
 }
