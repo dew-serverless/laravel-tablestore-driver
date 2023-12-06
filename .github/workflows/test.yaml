@@ -34,6 +34,6 @@ jobs:
         env:
           ACS_ACCESS_KEY_ID: ${{ secrets.ACS_ACCESS_KEY_ID }}
           ACS_ACCESS_KEY_SECRET: ${{ secrets.ACS_ACCESS_KEY_SECRET }}
-          OTS_ENDPOINT: ${{ secrets.TABLESTORE_ENDPOINT }}
-          OTS_TABLE: ${{ secrets.TABLESTORE_TABLE }}
+          TABLESTORE_ENDPOINT: ${{ secrets.TABLESTORE_ENDPOINT }}
+          TABLESTORE_TABLE: ${{ secrets.TABLESTORE_TABLE }}
 
