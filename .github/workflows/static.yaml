@@ -25,5 +25,8 @@ jobs:
       - name: Run Code Formatter
         run: composer test:style
 
+      - name: Run Refactor
+        run: composer test:refactor
+
       - name: Run Linter
         run: composer lint
