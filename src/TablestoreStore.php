@@ -8,7 +8,6 @@ use Dew\Tablestore\PlainbufferWriter;
 use Dew\Tablestore\PrimaryKey;
 use Dew\Tablestore\Responses\RowDecodableResponse;
 use Dew\Tablestore\Tablestore;
-use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\InteractsWithTime;
@@ -174,7 +173,7 @@ class TablestoreStore implements Store
      * @param  int  $seconds
      * @return bool
      */
-    public function add($key, $value, $seconds): bool
+    public function add($key, $value, $seconds)
     {
         try {
             Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestampMs())
@@ -285,7 +284,7 @@ class TablestoreStore implements Store
      * @param  string|null  $owner
      * @return \Illuminate\Contracts\Cache\Lock
      */
-    public function lock($name, $seconds = 0, $owner = null): Lock
+    public function lock($name, $seconds = 0, $owner = null)
     {
         return new TablestoreLock($this, $this->prefix.$name, $seconds, $owner);
     }
