@@ -9,4 +9,10 @@
             <directory suffix="Test.php">./tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="ACS_ACCESS_KEY_ID" value=""/>
+        <env name="ACS_ACCESS_KEY_SECRET" value=""/>
+        <env name="TABLESTORE_ENDPOINT" value=""/>
+        <env name="TABLESTORE_CACHE" value="testing"/>
+    </php>
 </phpunit>
