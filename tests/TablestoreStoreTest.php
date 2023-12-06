@@ -2,6 +2,7 @@
 
 namespace Zhineng\Tablestore\Tests;
 
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Orchestra\Testbench\TestCase;
@@ -9,6 +10,9 @@ use Zhineng\Tablestore\TablestoreServiceProvider;
 
 class TablestoreStoreTest extends TestCase
 {
+    /**
+     * Setup the test environment.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -99,23 +103,36 @@ class TablestoreStoreTest extends TestCase
         });
     }
 
+    /**
+     * Get package providers.
+     *
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return array<int, class-string<\Illuminate\Support\ServiceProvider>>
+     */
     protected function getPackageProviders($app)
     {
-        return [TablestoreServiceProvider::class];
+        return [
+            TablestoreServiceProvider::class,
+        ];
     }
 
-    protected function getEnvironmentSetUp($app)
+    /**
+     * Define environment setup.
+     *
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return void
+     */
+    protected function defineEnvironment($app)
     {
-        $app['config']->set('cache.default', 'tablestore');
-
-        $app['config']->set('cache.stores.tablestore', [
-            'driver' => 'tablestore',
-            'key' => env('ALIYUN_ACCESS_KEY_ID'),
-            'secret' => env('ALIYUN_SECRET_ACCESS_KEY'),
-            'region' => 'cn-hongkong',
-            'instance' => env('TABLESTORE_INSTANCE_NAME'),
-            'table' => env('TABLESTORE_CACHE_TABLE', 'laravel_test'),
-            'endpoint' => env('TABLESTORE_ENDPOINT'),
-        ]);
+        tap($app['config'], function (Repository $config) {
+            $config->set('cache.stores.tablestore', [
+                'driver' => 'tablestore',
+                'key' => env('ALIYUN_ACCESS_KEY_ID'),
+                'secret' => env('ALIYUN_SECRET_ACCESS_KEY'),
+                'endpoint' => env('TABLESTORE_ENDPOINT'),
+                'instance' => env('TABLESTORE_INSTANCE_NAME'),
+                'table' => env('TABLESTORE_CACHE_TABLE', 'laravel_test'),
+            ]);
+        });
     }
 }
