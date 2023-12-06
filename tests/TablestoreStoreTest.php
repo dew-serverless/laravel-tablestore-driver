@@ -61,6 +61,16 @@ class TablestoreStoreTest extends TestCase
         $this->assertSame($result, $items);
     }
 
+    public function test_items_can_be_returned_early_if_keys_are_empty()
+    {
+        $this->assertSame([], Cache::driver('tablestore')->many([]));
+    }
+
+    public function test_items_can_be_returned_early_when_saving_if_values_are_empty()
+    {
+        $this->assertTrue(Cache::driver('tablestore')->putMany([], 10));
+    }
+
     public function test_items_not_found_will_have_a_null_value()
     {
         $this->assertNull(Cache::driver('tablestore')->get('not-exists-1'));
@@ -80,8 +90,11 @@ class TablestoreStoreTest extends TestCase
     {
         $key = Str::random(6);
 
-        $this->assertTrue(Cache::driver('tablestore')->add($key, 'Zhineng', 10));
-        $this->assertFalse(Cache::driver('tablestore')->add($key, 'Zhineng', 10));
+        $this->assertTrue(Cache::driver('tablestore')->add($key, 'Zhineng', 5));
+        $this->assertFalse(Cache::driver('tablestore')->add($key, 'Zhineng', 5));
+
+        sleep(5);
+        $this->assertTrue(Cache::driver('tablestore')->add($key, 'Zhineng', 5));
     }
 
     public function test_items_can_be_incremented_and_decremented()
@@ -94,6 +107,13 @@ class TablestoreStoreTest extends TestCase
 
         Cache::driver('tablestore')->decrement('counter', 5);
         $this->assertSame(0, Cache::driver('tablestore')->get('counter'));
+    }
+
+    public function test_incrementing_and_decrementing_should_respect_expiration()
+    {
+        Cache::driver('tablestore')->getStore()->put('counter', 5, 0);
+        $this->assertFalse(Cache::driver('tablestore')->increment('counter'));
+        $this->assertFalse(Cache::driver('tablestore')->decrement('counter'));
     }
 
     public function test_locks_can_be_acquired()

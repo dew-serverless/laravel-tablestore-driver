@@ -52,12 +52,10 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function get($key)
     {
-        $response = $this->tablestore->table($this->table)
+        $item = $this->tablestore->table($this->table)
             ->whereKey($this->keyAttribute, $this->prefix.$key)
-            ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
-            ->get();
-
-        $item = $response->getDecodedRow();
+            ->where($this->expirationAttribute, '>', Carbon::now()->getTimestamp())
+            ->get()->getDecodedRow();
 
         if ($item === null) {
             return;
@@ -66,11 +64,7 @@ final class TablestoreStore implements LockProvider, Store
         /** @var \Dew\Tablestore\Contracts\HasValue[] */
         $values = $item[$this->valueAttribute] ?? [];
 
-        if (! isset($values[0])) {
-            return;
-        }
-
-        return $this->unserialize($values[0]->value());
+        return isset($values[0]) ? $this->unserialize($values[0]->value()) : null;
     }
 
     /**
@@ -83,13 +77,18 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function many(array $keys)
     {
-        $now = Carbon::now()->getTimestampMs();
+        if ($keys === []) {
+            return [];
+        }
 
-        $response = $this->tablestore->batch(function ($query) use ($keys, $now) {
+        $response = $this->tablestore->batch(function ($query) use ($keys) {
+            $query->table($this->table)->where(
+                $this->expirationAttribute, '>', Carbon::now()->getTimestamp()
+            );
+
             foreach ($keys as $key) {
                 $query->table($this->table)
                     ->whereKey($this->keyAttribute, $this->prefix.$key)
-                    ->where($this->expirationAttribute, '>', $now)
                     ->get();
             }
         });
@@ -103,17 +102,17 @@ final class TablestoreStore implements LockProvider, Store
         $rows = $tables[0]->getRows();
 
         foreach ($rows as $row) {
-            $decoded = (new RowDecodableResponse($row))->getDecodedRow();
+            $item = (new RowDecodableResponse($row))->getDecodedRow();
 
-            if ($decoded === null) {
+            if ($item === null) {
                 continue;
             }
 
             /** @var \Dew\Tablestore\Cells\StringPrimaryKey */
-            $key = $decoded[$this->keyAttribute];
+            $key = $item[$this->keyAttribute];
 
             /** @var \Dew\Tablestore\Contracts\HasValue[] */
-            $values = $decoded[$this->valueAttribute] ?? [];
+            $values = $item[$this->valueAttribute] ?? [];
 
             if (isset($values[0])) {
                 $result[$this->pure($key->value())] = $this->unserialize(
@@ -153,6 +152,10 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function putMany(array $values, $seconds)
     {
+        if ($values === []) {
+            return true;
+        }
+
         $expiration = $this->toTimestamp($seconds);
 
         $this->tablestore->batch(function ($query) use ($values, $expiration) {
@@ -179,7 +182,7 @@ final class TablestoreStore implements LockProvider, Store
     public function add($key, $value, $seconds)
     {
         try {
-            Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestampMs())
+            Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestamp())
                 ->toFormattedValue($now = new PlainbufferWriter);
 
             // Include only items that do not exist or that have expired
@@ -188,7 +191,7 @@ final class TablestoreStore implements LockProvider, Store
             $filter->setType(FilterType::FT_SINGLE_COLUMN_VALUE);
             $filter->setFilter((new SingleColumnValueFilter)
                 ->setColumnName($this->expirationAttribute)
-                ->setComparator(ComparatorType::CT_LESS_THAN)
+                ->setComparator(ComparatorType::CT_LESS_EQUAL)
                 ->setColumnValue($now->getBuffer())
                 ->setFilterIfMissing(false) // allow missing
                 ->setLatestVersionOnly(true)
@@ -226,6 +229,7 @@ final class TablestoreStore implements LockProvider, Store
             $this->tablestore->table($this->table)
                 ->whereKey($this->keyAttribute, $this->prefix.$key)
                 ->expectExists()
+                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestamp())
                 ->update([
                     Attribute::increment($this->valueAttribute, $value),
                 ]);
@@ -253,13 +257,14 @@ final class TablestoreStore implements LockProvider, Store
             $this->tablestore->table($this->table)
                 ->whereKey($this->keyAttribute, $this->prefix.$key)
                 ->expectExists()
+                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestamp())
                 ->update([
                     Attribute::decrement($this->valueAttribute, $value),
                 ]);
 
             return true;
         } catch (TablestoreException $e) {
-            if ($e->getError()->getCode() === 'ConditionalCheckFailed') {
+            if ($e->getError()->getCode() === 'OTSConditionCheckFail') {
                 return false;
             }
 
@@ -276,7 +281,7 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function forever($key, $value)
     {
-        return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestampMs());
+        return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestamp());
     }
 
     /**
@@ -382,15 +387,13 @@ final class TablestoreStore implements LockProvider, Store
     }
 
     /**
-     * Get the UNIX timestamp in milliseconds for the given number of seconds.
+     * Get the UNIX timestamp for the given number of seconds.
      */
     private function toTimestamp(int $seconds): int
     {
-        $timestamp = $seconds > 0
+        return $seconds > 0
             ? $this->availableAt($seconds)
             : Carbon::now()->getTimestamp();
-
-        return $timestamp * 1000;
     }
 
     /**
