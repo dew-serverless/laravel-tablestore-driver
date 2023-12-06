@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  static:
     runs-on: ubuntu-latest
 
     steps:
