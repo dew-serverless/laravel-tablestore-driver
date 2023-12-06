@@ -54,7 +54,7 @@ final class TablestoreStore implements LockProvider, Store
     {
         $item = $this->tablestore->table($this->table)
             ->whereKey($this->keyAttribute, $this->prefix.$key)
-            ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
+            ->where($this->expirationAttribute, '>', Carbon::now()->getTimestamp())
             ->get()->getDecodedRow();
 
         if ($item === null) {
@@ -83,7 +83,7 @@ final class TablestoreStore implements LockProvider, Store
 
         $response = $this->tablestore->batch(function ($query) use ($keys) {
             $query->table($this->table)->where(
-                $this->expirationAttribute, '>', Carbon::now()->getTimestampMs()
+                $this->expirationAttribute, '>', Carbon::now()->getTimestamp()
             );
 
             foreach ($keys as $key) {
@@ -182,7 +182,7 @@ final class TablestoreStore implements LockProvider, Store
     public function add($key, $value, $seconds)
     {
         try {
-            Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestampMs())
+            Attribute::integer($this->expirationAttribute, Carbon::now()->getTimestamp())
                 ->toFormattedValue($now = new PlainbufferWriter);
 
             // Include only items that do not exist or that have expired
@@ -229,7 +229,7 @@ final class TablestoreStore implements LockProvider, Store
             $this->tablestore->table($this->table)
                 ->whereKey($this->keyAttribute, $this->prefix.$key)
                 ->expectExists()
-                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
+                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestamp())
                 ->update([
                     Attribute::increment($this->valueAttribute, $value),
                 ]);
@@ -257,7 +257,7 @@ final class TablestoreStore implements LockProvider, Store
             $this->tablestore->table($this->table)
                 ->whereKey($this->keyAttribute, $this->prefix.$key)
                 ->expectExists()
-                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
+                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestamp())
                 ->update([
                     Attribute::decrement($this->valueAttribute, $value),
                 ]);
@@ -281,7 +281,7 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function forever($key, $value)
     {
-        return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestampMs());
+        return $this->put($key, $value, Carbon::now()->addYears(5)->getTimestamp());
     }
 
     /**
@@ -387,15 +387,13 @@ final class TablestoreStore implements LockProvider, Store
     }
 
     /**
-     * Get the UNIX timestamp in milliseconds for the given number of seconds.
+     * Get the UNIX timestamp for the given number of seconds.
      */
     private function toTimestamp(int $seconds): int
     {
-        $timestamp = $seconds > 0
+        return $seconds > 0
             ? $this->availableAt($seconds)
             : Carbon::now()->getTimestamp();
-
-        return $timestamp * 1000;
     }
 
     /**
