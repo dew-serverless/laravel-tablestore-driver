@@ -39,9 +39,10 @@
     "scripts": {
         "format": "pint",
         "lint": "phpstan analyze",
+        "test:style": "pint --test",
         "test:integrate": "phpunit",
         "test": [
-            "pint --test",
+            "@test:style",
             "@lint",
             "@test:integrate"
         ]
