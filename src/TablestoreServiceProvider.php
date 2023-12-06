@@ -6,7 +6,7 @@ use Dew\Tablestore\Tablestore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
-class TablestoreServiceProvider extends ServiceProvider
+final class TablestoreServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.

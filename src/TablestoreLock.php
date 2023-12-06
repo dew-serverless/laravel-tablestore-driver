@@ -5,7 +5,7 @@ namespace Zhineng\Tablestore;
 use Illuminate\Cache\Lock;
 use RuntimeException;
 
-class TablestoreLock extends Lock
+final class TablestoreLock extends Lock
 {
     /**
      * Create a new Tablestore lock instance.
