@@ -34,5 +34,9 @@
                 "Zhineng\\Tablestore\\TablestoreServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "lint": "phpstan analyze",
+        "test": "phpunit"
     }
 }
