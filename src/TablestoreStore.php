@@ -316,9 +316,6 @@ class TablestoreStore implements Store
 
     /**
      * Set the cache key prefix.
-     *
-     * @param  string  $prefix
-     * @return void
      */
     protected function setPrefix(string $prefix): void
     {
@@ -341,7 +338,7 @@ class TablestoreStore implements Store
      */
     protected function serialize(mixed $value): int|float|bool|string
     {
-        return match(gettype($value)) {
+        return match (gettype($value)) {
             'integer', 'double', 'boolean' => $value,
             default => serialize($value),
         };
@@ -371,9 +368,6 @@ class TablestoreStore implements Store
 
     /**
      * Get the UNIX timestamp in milliseconds for the given number of seconds.
-     *
-     * @param  int  $seconds
-     * @return int
      */
     protected function toTimestamp(int $seconds): int
     {
