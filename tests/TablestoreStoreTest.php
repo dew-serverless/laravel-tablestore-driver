@@ -66,6 +66,11 @@ class TablestoreStoreTest extends TestCase
         $this->assertSame([], Cache::driver('tablestore')->many([]));
     }
 
+    public function test_items_can_be_returned_early_when_saving_if_values_are_empty()
+    {
+        $this->assertTrue(Cache::driver('tablestore')->putMany([], 10));
+    }
+
     public function test_items_not_found_will_have_a_null_value()
     {
         $this->assertNull(Cache::driver('tablestore')->get('not-exists-1'));

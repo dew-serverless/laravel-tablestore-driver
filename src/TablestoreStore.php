@@ -152,6 +152,10 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function putMany(array $values, $seconds)
     {
+        if ($values === []) {
+            return true;
+        }
+
         $expiration = $this->toTimestamp($seconds);
 
         $this->tablestore->batch(function ($query) use ($values, $expiration) {
