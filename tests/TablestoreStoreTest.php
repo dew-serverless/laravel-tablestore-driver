@@ -109,6 +109,13 @@ class TablestoreStoreTest extends TestCase
         $this->assertSame(0, Cache::driver('tablestore')->get('counter'));
     }
 
+    public function test_incrementing_and_decrementing_should_respect_expiration()
+    {
+        Cache::driver('tablestore')->getStore()->put('counter', 5, 0);
+        $this->assertFalse(Cache::driver('tablestore')->increment('counter'));
+        $this->assertFalse(Cache::driver('tablestore')->decrement('counter'));
+    }
+
     public function test_locks_can_be_acquired()
     {
         Cache::driver('tablestore')->lock('lock', 10)->get(function () {

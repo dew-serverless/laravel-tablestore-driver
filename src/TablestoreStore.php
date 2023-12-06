@@ -229,6 +229,7 @@ final class TablestoreStore implements LockProvider, Store
             $this->tablestore->table($this->table)
                 ->whereKey($this->keyAttribute, $this->prefix.$key)
                 ->expectExists()
+                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
                 ->update([
                     Attribute::increment($this->valueAttribute, $value),
                 ]);
@@ -256,13 +257,14 @@ final class TablestoreStore implements LockProvider, Store
             $this->tablestore->table($this->table)
                 ->whereKey($this->keyAttribute, $this->prefix.$key)
                 ->expectExists()
+                ->where($this->expirationAttribute, '>', Carbon::now()->getTimestampMs())
                 ->update([
                     Attribute::decrement($this->valueAttribute, $value),
                 ]);
 
             return true;
         } catch (TablestoreException $e) {
-            if ($e->getError()->getCode() === 'ConditionalCheckFailed') {
+            if ($e->getError()->getCode() === 'OTSConditionCheckFail') {
                 return false;
             }
 
