@@ -37,6 +37,7 @@
         }
     },
     "scripts": {
+        "format": "pint",
         "lint": "phpstan analyze",
         "test": "phpunit"
     }
