@@ -77,6 +77,10 @@ final class TablestoreStore implements LockProvider, Store
      */
     public function many(array $keys)
     {
+        if ($keys === []) {
+            return [];
+        }
+
         $now = Carbon::now()->getTimestampMs();
 
         $response = $this->tablestore->batch(function ($query) use ($keys, $now) {
