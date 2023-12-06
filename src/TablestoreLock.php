@@ -31,9 +31,9 @@ final class TablestoreLock extends Lock
      */
     public function acquire()
     {
-        return $this->tablestore->add(
-            $this->name, $this->owner, $this->seconds
-        );
+        $seconds = $this->seconds > 0 ? $this->seconds : 86400;
+
+        return $this->tablestore->add($this->name, $this->owner, $seconds);
     }
 
     /**
