@@ -40,10 +40,13 @@
     "scripts": {
         "format": "pint",
         "lint": "phpstan analyze",
+        "refactor": "rector process",
         "test:style": "pint --test",
+        "test:refactor": "rector process --dry-run",
         "test:integrate": "phpunit",
         "test": [
             "@test:style",
+            "@test:refactor",
             "@lint",
             "@test:integrate"
         ]
