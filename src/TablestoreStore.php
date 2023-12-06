@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Zhineng\Tablestore;
 
 use Dew\Tablestore\Attribute;
