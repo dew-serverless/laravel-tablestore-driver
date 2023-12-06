@@ -90,8 +90,11 @@ class TablestoreStoreTest extends TestCase
     {
         $key = Str::random(6);
 
-        $this->assertTrue(Cache::driver('tablestore')->add($key, 'Zhineng', 10));
-        $this->assertFalse(Cache::driver('tablestore')->add($key, 'Zhineng', 10));
+        $this->assertTrue(Cache::driver('tablestore')->add($key, 'Zhineng', 5));
+        $this->assertFalse(Cache::driver('tablestore')->add($key, 'Zhineng', 5));
+
+        sleep(5);
+        $this->assertTrue(Cache::driver('tablestore')->add($key, 'Zhineng', 5));
     }
 
     public function test_items_can_be_incremented_and_decremented()
