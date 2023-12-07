@@ -1,12 +1,12 @@
 <?php
 
-namespace Zhineng\Tablestore\Tests;
+namespace Dew\TablestoreDriver\Tests;
 
+use Dew\TablestoreDriver\TablestoreServiceProvider;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Orchestra\Testbench\TestCase;
-use Zhineng\Tablestore\TablestoreServiceProvider;
 
 class TablestoreStoreTest extends TestCase
 {

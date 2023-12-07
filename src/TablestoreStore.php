@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zhineng\Tablestore;
+namespace Dew\TablestoreDriver;
 
 use Dew\Tablestore\Attribute;
 use Dew\Tablestore\Exceptions\TablestoreException;
