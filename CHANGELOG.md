@@ -14,4 +14,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `tablestore` driver for Laravel Cache.
 
 [unreleased]: https://github.com/dew-serverless/laravel-tablestore-driver/compare/v1.0.0...HEAD
-[0.0.1]: https://github.com/dew-serverless/laravel-tablestore-driver/releases/tag/v1.0.0
+[1.0.0]: https://github.com/dew-serverless/laravel-tablestore-driver/releases/tag/v1.0.0
