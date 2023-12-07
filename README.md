@@ -5,7 +5,9 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/dew-serverless/laravel-tablestore-driver)](https://github.com/dew-serverless/laravel-tablestore-driver)
 [![License](https://img.shields.io/packagist/l/dew-serverless/laravel-tablestore-driver)](https://github.com/dew-serverless/laravel-tablestore-driver)
 
-The driver extends your Laravel cache on top of Alibaba Cloud Tablestore, a serverless storage service with unlimited storage, the ability to query and retrieve items in milliseconds, and frees you from infrastructure maintenance.
+The driver extends your Laravel cache on top of Alibaba Cloud Tablestore, a
+serverless storage service with unlimited storage, the ability to query and
+retrieve items in milliseconds, and frees you from infrastructure maintenance.
 
 ## Documentation
 
