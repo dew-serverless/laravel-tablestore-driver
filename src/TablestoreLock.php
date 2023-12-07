@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Zhineng\Tablestore;
+namespace Dew\TablestoreDriver;
 
 use Illuminate\Cache\Lock;
 use RuntimeException;

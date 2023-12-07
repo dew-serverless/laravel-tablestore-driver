@@ -1,6 +1,13 @@
 {
-    "name": "lizhineng/laravel-tablestore-cache-driver",
-    "description": "Laravel cache driver for Alibaba Cloud Tablestore.",
+    "name": "dew-serverless/laravel-tablestore-driver",
+    "description": "Alibaba Cloud Tablestore driver for Laravel Cache.",
+    "keywords": [
+        "tablestore",
+        "laravel",
+        "alibabacloud",
+        "aliyun",
+        "acs"
+    ],
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -22,18 +29,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Zhineng\\Tablestore\\": "src"
+            "Dew\\TablestoreDriver\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Zhineng\\Tablestore\\Tests\\": "tests"
+            "Dew\\TablestoreDriver\\Tests\\": "tests"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Zhineng\\Tablestore\\TablestoreServiceProvider"
+                "Dew\\TablestoreDriver\\TablestoreServiceProvider"
             ]
         }
     },
