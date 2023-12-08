@@ -18,29 +18,39 @@ final class TablestoreServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->booting(function () {
-            Cache::extend('tablestore', function ($app, $config) {
-                $client = new Tablestore(
-                    $config['key'], $config['secret'],
-                    $config['endpoint'], $config['instance'] ?? null
-                );
+            $this->registerCacheDriver();
+        });
+    }
 
-                if (isset($config['token'])) {
-                    $client->tokenUsing($config['token']);
-                }
+    /**
+     * Register the Tablestore cache driver.
+     */
+    private function registerCacheDriver(): void
+    {
+        Cache::extend('tablestore', function ($app, $config) {
+            $client = new Tablestore(
+                $config['key'], $config['secret'],
+                $config['endpoint'], $config['instance'] ?? null
+            );
 
-                if (isset($config['http'])) {
-                    $client->optionsUsing($config['http']);
-                }
+            if (isset($config['token'])) {
+                $client->tokenUsing($config['token']);
+            }
 
-                return Cache::repository(new TablestoreStore(
+            if (isset($config['http'])) {
+                $client->optionsUsing($config['http']);
+            }
+
+            return Cache::repository(
+                new TablestoreStore(
                     $client,
                     $config['table'],
                     $config['attributes']['key'] ?? 'key',
                     $config['attributes']['value'] ?? 'value',
                     $config['attributes']['expiration'] ?? 'expires_at',
-                    $config['prefix'] ?? $this->app['config']['cache.prefix']
-                ));
-            });
+                    $this->getPrefix($config)
+                )
+            );
         });
     }
 }

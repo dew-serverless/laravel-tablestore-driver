@@ -7,7 +7,7 @@ parameters:
         - src
     ignoreErrors:
         -
-            message: '#^Cannot access offset ''config'' on Illuminate\\Contracts\\Foundation\\Application\.$#'
+            message: '#^Call to an undefined method Dew\\TablestoreDriver\\TablestoreServiceProvider::getPrefix\(\)\.$#'
             path: src/TablestoreServiceProvider.php
         -
             message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::get\(\)$#'
