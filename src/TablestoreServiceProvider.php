@@ -24,6 +24,10 @@ final class TablestoreServiceProvider extends ServiceProvider
                     $config['endpoint'], $config['instance'] ?? null
                 );
 
+                if (isset($config['token'])) {
+                    $client->tokenUsing($config['token']);
+                }
+
                 return Cache::repository(new TablestoreStore(
                     $client,
                     $config['table'],
