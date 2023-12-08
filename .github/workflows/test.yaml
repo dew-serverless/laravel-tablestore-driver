@@ -5,17 +5,13 @@ on:
   pull_request:
 
 jobs:
-  integration:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork)
-
+  version_constraints:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         php: ['8.0', '8.1', '8.2', '8.3']
         dependency-version: [prefer-lowest, prefer-stable]
-      fail-fast: true
-      max-parallel: 1
 
     name: PHP ${{ matrix.php }} - ${{ matrix.dependency-version }}
 
@@ -32,6 +28,31 @@ jobs:
 
       - name: Install Dependencies
         run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress --ansi
+
+  integration:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork)
+
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration
+      cancel-in-progress: true
+
+    name: Integration Test
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer update --prefer-stable --no-interaction --no-progress --ansi
 
       - name: Run Integration Test
         run: composer test:integration
