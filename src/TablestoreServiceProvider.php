@@ -19,6 +19,7 @@ final class TablestoreServiceProvider extends ServiceProvider
     {
         $this->app->booting(function () {
             $this->registerCacheDriver();
+            $this->registerSessionDriver();
         });
     }
 
@@ -52,5 +53,18 @@ final class TablestoreServiceProvider extends ServiceProvider
                 )
             );
         });
+    }
+
+    /**
+     * Register the Tablestore session driver.
+     */
+    private function registerSessionDriver(): void
+    {
+        /** @var \Illuminate\Session\SessionManager */
+        $manager = $this->app->make('session');
+
+        $handler = fn ($app) => $this->createCacheHandler('tablestore');
+
+        $manager->extend('tablestore', $handler->bindTo($manager, $manager));
     }
 }

@@ -10,6 +10,9 @@ parameters:
             message: '#^Call to an undefined method Dew\\TablestoreDriver\\TablestoreServiceProvider::getPrefix\(\)\.$#'
             path: src/TablestoreServiceProvider.php
         -
+            message: '#^Call to an undefined method Dew\\TablestoreDriver\\TablestoreServiceProvider::createCacheHandler\(\)\.$#'
+            path: src/TablestoreServiceProvider.php
+        -
             message: '#should be contravariant with .* Illuminate\\Contracts\\Cache\\Store::get\(\)$#'
             path: src/TablestoreStore.php
         -
