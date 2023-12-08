@@ -30,8 +30,6 @@ jobs:
         run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress --ansi
 
   integration:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork)
-
     runs-on: ubuntu-latest
 
     concurrency:
