@@ -34,7 +34,7 @@ jobs:
 
     concurrency:
       group: integration
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     name: Integration Test
 
